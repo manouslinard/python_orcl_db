@@ -233,3 +233,127 @@ class BookHandler():
             return bool(r)
         except cx_Oracle.Error as error:
             print(error)
+
+class LoansHandler():
+    def __init__(self, conn: Connection) -> None:
+        '''
+        Creates a member handler object.
+        Param: username: the username of the user inside of db.
+               password: the password of the user inside of db.
+               server: the server address (default is HUA server).
+               port: the server's port (default is HUA server's port).
+               service_name: the service's name (default is HUA server's service_name).
+               csv_folder_name: the folder with all csv files (WARNING: has to be in the same directory as this python file).
+        '''
+        self.conn = conn
+        self.cursor = self.conn.conn.cursor()
+        self.cursor.callproc("dbms_output.enable")  # enables dbms output
+
+
+    def return_book(self, isbn_loaned_book:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    loans_handler.h_return_book({isbn_loaned_book});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def update_deadline_date(self, isbn_loaned_book:int, new_deadline:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD'""")
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    loans_handler.h_update_deadline_date({isbn_loaned_book}, '{new_deadline}');
+                END;
+                """
+            )
+            
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def is_loan(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_is_loan({isbn});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return bool(r)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def get_loans_days(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_get_loans_days({isbn});
+                    dbms_output.put_line(result);
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return r
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def get_fine(self,isbn:int,daily_fine_cost:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_get_fine({isbn}, {daily_fine_cost});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return r
+        except cx_Oracle.Error as error:
+            print(error)
+
+
+    
