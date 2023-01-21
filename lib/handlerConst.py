@@ -401,7 +401,6 @@ MEMBER PROCEDURE h_update_deadline_date(isbn_loaned_book NUMBER, new_deadline DA
 BEGIN 
     update_deadline_date(isbn_loaned_book, new_deadline );
 END h_update_deadline_date;
-
 END;
 """
 
@@ -436,4 +435,4 @@ class Compile():
         cursor.execute(get_loans_days)
         cursor.execute(get_fine)
         cursor.execute(loan_handler_obj)
-        cursor.execut(loan_handler_obj_body)
+        cursor.execute(loan_handler_obj_body)

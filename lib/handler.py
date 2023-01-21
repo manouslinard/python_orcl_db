@@ -248,7 +248,7 @@ class LoansHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
-
+        Compile.loan_handler_obj(self.cursor)
 
     def return_book(self, isbn_loaned_book:int):
         '''Finds a book by title.'''
