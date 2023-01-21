@@ -2,13 +2,10 @@ import os
 import csv
 import pandas as pd
 import cx_Oracle
+import lib.config as config
 
-# CHANGE THESE VARIABLES ACCORDING TO YOUR PREFERENCES ==================================
-
-# change path to corresponding path of instantclient
-PATH_INSTANT_CLIENT_ORCL=r"C:\instantclient\instantclient_21_8"
-DEF_CSV_FOLDER = "INSERT_CSV_HERE"
-#========================================================================================
+PATH_INSTANT_CLIENT_ORCL = config.PATH_INSTANT_CLIENT_ORCL
+DEF_CSV_FOLDER = config.DEF_CSV_FOLDER
 
 class Connection():
     """Connect to Database and handles requests."""
