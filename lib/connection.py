@@ -7,12 +7,12 @@ import cx_Oracle
 
 # change path to corresponding path of instantclient
 PATH_INSTANT_CLIENT_ORCL=r"C:\instantclient\instantclient_21_8"
-
+DEF_CSV_FOLDER = "INSERT_CSV_HERE"
 #========================================================================================
 
 class Connection():
     """Connect to Database and handles requests."""
-    def __init__(self, username: str = None, password: str = None, server: str = 'oracle12c.hua.gr', port: str = '1521', service_name: str = 'orcl', csv_folder_name: str = "INSERT_CSV_HERE") -> None:
+    def __init__(self, username: str = None, password: str = None, server: str = 'oracle12c.hua.gr', port: str = '1521', service_name: str = 'orcl', csv_folder_name: str = DEF_CSV_FOLDER) -> None:
         '''
         Creates a connection to an oracle sql server.
         Param: username: the username of the user inside of db.
@@ -90,7 +90,7 @@ class Connection():
         irisData = pd.read_csv(f'{csv_file}',index_col=False)
         v=irisData.get(column_name)
         max_fl=-1    # saves max length number after '.'
-        max=0
+        max=1
         isint=True
         isstring=True
         for i in v:
@@ -191,7 +191,12 @@ class Connection():
         return list_of_column_names[0]
 
     def __get_columns_str(self, csv_name: str):
-        return ', '.join(self.__get_columns(csv_name))
+        '''Returns columns of requested csv file to a string.'''
+        col = self.__get_columns(csv_name)
+        if len(col) <= 1:
+            return col
+        else:
+            return ', '.join(col)
 
     def __num_values_str(self, csv_name: str):
         '''Returns the values of csv columns.'''
@@ -291,7 +296,13 @@ class Connection():
         if not self.__checkTableExists(table_name):
             print(f'Requested table {table_name} does not exist')
             return
-        prString = ', '.join(primary_key)
+        if len(primary_key) == 0:
+            print('Could not import primary keys => not defined in function call.')
+            return
+        if len(primary_key) == 1:
+            prString = primary_key[0]
+        else:
+            prString = ', '.join(primary_key)
         if pr_con_name is None:
             pr_con_name =  f'PK_{table_name}'
         exec_string = f"ALTER TABLE {table_name} ADD CONSTRAINT {pr_con_name} PRIMARY KEY ({prString})"
@@ -318,9 +329,38 @@ class Connection():
         except:
             return False
 
+    def add_unique_constr(self, table_name: str, col: list, constr_name: str = None):
+        '''
+        Adds unique constraint.
+        Param: table_name: the name of the table to add the unique constraints to.
+               col: list of columns
+        '''
+        if not self.__checkTableExists(table_name):
+            print(f'Requested table {table_name} does not exist')
+            return
+        if len(col) == 0:
+            print('Unique columns not defined in function call, could not execute.')
+            return
+        if len(col) == 1:
+            uniqString = col[0]
+        else:
+            uniqString = ', '.join(col)
+        if constr_name is None:
+            constr_name =  f'uniq_{table_name}'
+        exec_string = f"ALTER TABLE {table_name} ADD CONSTRAINT {constr_name} UNIQUE ({uniqString})"
+        try:
+            self.cursor.execute(exec_string)
+            self.conn.commit()
+            print(f'Requested unique constraints added to table {table_name}')
+        except:
+            print("Failed to add unique key constraints (make sure that requested columns exist or change contstraint name).")
+
+
 # enter your credentials:
 conn = Connection('ITxxxxxxxxx', 'ITxxxxxxx')
-conn.create_table('iris_test2', 'iris', req_columns=['sepal_length'], pr_keys=['sepal_length'], replace=True, pr_con_name='test_pk')
+conn.create_table('iris_test2', 'iris', replace=True)
+conn.insert('iris_test2', 'iris', delete_prev_recs=True)
+# conn.add_unique_constr('iris_test2', col=['sepal_length', 'sepal_width'], constr_name='test_constr2')
 # conn.create_table('iris_test3', 'iris', req_columns=['sepal_length'], replace=True)
 # conn.add_primary_key('iris_test3', ['sepal_length'])
 # conn.add_foreign_key('iris_test2', 'sepal_length', 'iris_test3', 'sepal_length')
