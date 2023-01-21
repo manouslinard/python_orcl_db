@@ -19,4 +19,4 @@ If the input table does not exist, it creates a new one with the suitable data t
 
 You can change the name of the folder 'INSERT_CSV_HERE' (<ins>not</ins> its location). It is recommended to change def_folder_name in configuration (see at the top of connection.py) to the name of your folder or define it in constructor.
 
-Warning: Requested csv files should not be empty, else code does not work.
+Warning: Requested csv files should not be completely empty, else code does not work.
