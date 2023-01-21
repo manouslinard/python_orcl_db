@@ -1,5 +1,6 @@
 import cx_Oracle
 from connection import Connection
+from handlerConst import Compile
 
 FUNC_ERROR = -100
 
@@ -41,6 +42,7 @@ class MemberHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        Compile.member_handler_obj(self.cursor)
 
     def lend_book(self, isbn: int, member_id: int, days_deadline: int):
         '''Lends a book to a member (with deadline).'''
@@ -93,6 +95,7 @@ class BookHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        Compile.book_handler_obj(self.cursor)
 
     def has_category(self, isbn: int, cat_id: int):
         '''Checks if input isbn (book) has input category (id).'''
@@ -229,9 +232,10 @@ class BookHandler():
             print(error)
 
 
-c = Connection('it22033', 'IT22033')
+c = Connection('ITxxxx', 'ITxxxx')
 
 
-b = BookHandler(c)
-print(b.book_exists(1111111111111))
+b = MemberHandler(c)
+b.add_member(15, 'Lol', 'Haha')
+# print(b.book_exists(1111111111111))
 
