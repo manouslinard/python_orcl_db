@@ -1,6 +1,6 @@
 import cx_Oracle
-from connection import Connection
-from handlerConst import Compile
+from .connection import Connection
+from .handlerConst import Compile
 
 FUNC_ERROR = -100
 
@@ -180,7 +180,7 @@ class BookHandler():
                     book_handler book_handler_obj;
                 BEGIN
                     book_handler := book_handler_obj(0);
-                    book_handler.h_add_book({new_tite},{new_author},{new_isbn},{cat_id});
+                    book_handler.h_add_book('{new_tite}','{new_author}',{new_isbn},{cat_id});
                 END;
                 """
             )
@@ -230,12 +230,3 @@ class BookHandler():
             return bool(r)
         except cx_Oracle.Error as error:
             print(error)
-
-
-c = Connection('ITxxxx', 'ITxxxx')
-
-
-b = MemberHandler(c)
-b.add_member(15, 'Lol', 'Haha')
-# print(b.book_exists(1111111111111))
-
