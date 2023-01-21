@@ -54,7 +54,7 @@ class Connection():
             exit()
         return conn
 
-    def __checkTableExists(self, table_name: str):
+    def checkTableExists(self, table_name: str):
         '''
         Checks if input table exists.
         Param: table_name: the input table's name.
@@ -141,7 +141,7 @@ class Connection():
             self.__del__()
             return
 
-        table_exists = self.__checkTableExists(table_name)
+        table_exists = self.checkTableExists(table_name)
         if table_exists and replace:
             self.drop_table(table_name)
         elif table_exists and not replace:
@@ -213,7 +213,7 @@ class Connection():
         Deletes contents from input table
         Param: table_name: the requested table.
         '''
-        if not self.__checkTableExists(table_name):
+        if not self.checkTableExists(table_name):
             print('Cannot delete contents of non existing table.')
             return
         self.cursor.execute(f"DELETE FROM {table_name}")
@@ -226,7 +226,7 @@ class Connection():
                csv_name: the name of the csv file for the data to be saved.
                delete_prev_recs: if true, deletes all previous records of input table.
         '''
-        if not self.__checkTableExists(table_name):
+        if not self.checkTableExists(table_name):
             print('Requested table does not exist. Please create it first.')
             return
         tmp_csv_name = os.path.join(self.CSV_FOLDER, csv_name)
@@ -269,10 +269,10 @@ class Connection():
                pk_table2: the column of table2 that the foreign key refers to.
                fk_con_name: input constraint name for foreign key (optional).
         '''
-        if not self.__checkTableExists(table1):
+        if not self.checkTableExists(table1):
             print(f'Requested table {table1} does not exist')
             return
-        if not self.__checkTableExists(table2):
+        if not self.checkTableExists(table2):
             print(f'Requested table {table2} does not exist')
             return
         if fk_con_name is None:
@@ -293,7 +293,7 @@ class Connection():
                primary_key: the column of input table to become primary key (make sure it exists).
                pk_con_name: input constraint name for primary key (optional).
         '''
-        if not self.__checkTableExists(table_name):
+        if not self.checkTableExists(table_name):
             print(f'Requested table {table_name} does not exist')
             return
         if len(primary_key) == 0:
@@ -320,7 +320,7 @@ class Connection():
                col_name: the column's name to check for.
         Returns: true if column exists in specified table, else false.
         '''
-        if not self.__checkTableExists(table_name):
+        if not self.checkTableExists(table_name):
             print('Requested Table does not exist.')
             return False
         try:
@@ -335,7 +335,7 @@ class Connection():
         Param: table_name: the name of the table to add the unique constraints to.
                col: list of columns
         '''
-        if not self.__checkTableExists(table_name):
+        if not self.checkTableExists(table_name):
             print(f'Requested table {table_name} does not exist')
             return
         if len(col) == 0:
@@ -354,13 +354,3 @@ class Connection():
             print(f'Requested unique constraints added to table {table_name}')
         except:
             print("Failed to add unique key constraints (make sure that requested columns exist or change contstraint name).")
-
-
-# enter your credentials:
-conn = Connection('ITxxxxxxxxx', 'ITxxxxxxx')
-conn.create_table('iris_test2', 'iris', replace=True)
-conn.insert('iris_test2', 'iris', delete_prev_recs=True)
-# conn.add_unique_constr('iris_test2', col=['sepal_length', 'sepal_width'], constr_name='test_constr2')
-# conn.create_table('iris_test3', 'iris', req_columns=['sepal_length'], replace=True)
-# conn.add_primary_key('iris_test3', ['sepal_length'])
-# conn.add_foreign_key('iris_test2', 'sepal_length', 'iris_test3', 'sepal_length')
