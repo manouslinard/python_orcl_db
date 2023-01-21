@@ -95,6 +95,9 @@ class BookHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        if not conn.checkTableExists("books_by_cat_res"):
+            books_by_cat_res = """create table books_by_cat_res(ISBN NUMBER(13))"""
+            self.cursor.execute(books_by_cat_res)
         Compile.book_handler_obj(self.cursor)
 
     def has_category(self, isbn: int, cat_id: int):
