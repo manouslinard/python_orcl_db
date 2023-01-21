@@ -1,6 +1,5 @@
 from lib.handler import *
 
-c = Connection("ITxxxx", "ITxxxx")
-b = BookHandler(c)
-
-b.add_book('asd','asd',123123,1)
+c = Connection('ITxxxxx', 'ITxxxxx')
+m = LoansHandler(c)
+m.update_deadline_date(1111111111111, '2023-01-15')
