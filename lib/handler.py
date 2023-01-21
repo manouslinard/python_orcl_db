@@ -1,5 +1,6 @@
 import cx_Oracle
-from connection import Connection
+from .connection import Connection
+from .handlerConst import Compile
 
 FUNC_ERROR = -100
 
@@ -41,6 +42,7 @@ class MemberHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        Compile.member_handler_obj(self.cursor)
 
     def lend_book(self, isbn: int, member_id: int, days_deadline: int):
         '''Lends a book to a member (with deadline).'''
@@ -93,6 +95,10 @@ class BookHandler():
         self.conn = conn
         self.cursor = self.conn.conn.cursor()
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        if not conn.checkTableExists("books_by_cat_res"):
+            books_by_cat_res = """create table books_by_cat_res(ISBN NUMBER(13))"""
+            self.cursor.execute(books_by_cat_res)
+        Compile.book_handler_obj(self.cursor)
 
     def has_category(self, isbn: int, cat_id: int):
         '''Checks if input isbn (book) has input category (id).'''
@@ -113,12 +119,241 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
             return FUNC_ERROR
+    
+    def book_by_title(self, title:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_book_by_title('{title}');
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def book_by_author(self, author:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_book_by_author('{author}');
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def return_book_to_library(self, isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_return_book_to_library({isbn});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def add_book(self, new_tite:str, new_author:str, new_isbn:int, cat_id:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_add_book('{new_tite}','{new_author}',{new_isbn},{cat_id});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def books_by_category(self, cat_id:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+            
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_books_by_category({cat_id});
+                    
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def book_exists(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                    result number;
+            
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    result := book_handler.h_book_exists({isbn});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return bool(r)
+        except cx_Oracle.Error as error:
+            print(error)
+
+class LoansHandler():
+    def __init__(self, conn: Connection) -> None:
+        '''
+        Creates a member handler object.
+        Param: username: the username of the user inside of db.
+               password: the password of the user inside of db.
+               server: the server address (default is HUA server).
+               port: the server's port (default is HUA server's port).
+               service_name: the service's name (default is HUA server's service_name).
+               csv_folder_name: the folder with all csv files (WARNING: has to be in the same directory as this python file).
+        '''
+        self.conn = conn
+        self.cursor = self.conn.conn.cursor()
+        self.cursor.callproc("dbms_output.enable")  # enables dbms output
+        Compile.loan_handler_obj(self.cursor)
+
+    def return_book(self, isbn_loaned_book:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    loans_handler.h_return_book({isbn_loaned_book});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def update_deadline_date(self, isbn_loaned_book:int, new_deadline:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD'""")
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    loans_handler.h_update_deadline_date({isbn_loaned_book}, '{new_deadline}');
+                END;
+                """
+            )
+            
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def is_loan(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_is_loan({isbn});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return bool(r)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def get_loans_days(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_get_loans_days({isbn});
+                    dbms_output.put_line(result);
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return r
+        except cx_Oracle.Error as error:
+            print(error)
+
+    def get_fine(self,isbn:int,daily_fine_cost:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    loans_handler loans_handler_obj;
+                    result number;
+            
+                BEGIN
+                    loans_handler := loans_handler_obj(0);
+                    result := loans_handler.h_get_fine({isbn}, {daily_fine_cost});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return r
+        except cx_Oracle.Error as error:
+            print(error)
 
 
-c = Connection('ITxxxxx', 'ITxxxxxxx')
-m = MemberHandler(c)
-m.lend_book(9789606355516, 9, 7)
-m.add_member(14,'Nikos Papas','Axompa 2')
-
-b = BookHandler(c)
-print(b.has_category(1111111111113, 1))
+    
