@@ -113,12 +113,125 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
             return FUNC_ERROR
+    
+    def book_by_title(self, title:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_book_by_title('{title}');
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def book_by_author(self, author:str):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_book_by_author('{author}');
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def return_book_to_library(self, isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_return_book_to_library({isbn});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def add_book(self, new_tite:str, new_author:str, new_isbn:int, cat_id:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_add_book({new_tite},{new_author},{new_isbn},{cat_id});
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def books_by_category(self, cat_id:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+            
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    book_handler.h_books_by_category({cat_id});
+                    
+                END;
+                """
+            )
+            self.conn.conn.commit()
+            get_dbms_output(self.cursor)
+        except cx_Oracle.Error as error:
+            print(error)
+    
+    def book_exists(self,isbn:int):
+        '''Finds a book by title.'''
+        try:
+            # call the stored procedure
+            self.cursor.execute(f"""
+                DECLARE
+                    book_handler book_handler_obj;
+                    result number;
+            
+                BEGIN
+                    book_handler := book_handler_obj(0);
+                    result := book_handler.h_book_exists({isbn});
+                    dbms_output.put_line(result);
+                    
+                END;
+                """
+            )
+            r = int(get_dbms_output(self.cursor, print_res=False))
+            return bool(r)
+        except cx_Oracle.Error as error:
+            print(error)
 
 
-c = Connection('ITxxxxx', 'ITxxxxxxx')
-m = MemberHandler(c)
-m.lend_book(9789606355516, 9, 7)
-m.add_member(14,'Nikos Papas','Axompa 2')
+c = Connection('it22033', 'IT22033')
+
 
 b = BookHandler(c)
-print(b.has_category(1111111111113, 1))
+print(b.book_exists(1111111111111))
+
