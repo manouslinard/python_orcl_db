@@ -51,7 +51,10 @@ def drop_lib_tables(c: Connection):
         c.drop_table('BOOKS')
 
 def test_book_handler(book_handler: BookHandler):
-    '''Tests all functions & procedures of book handler object.'''
+    '''
+    Tests all functions & procedures of book handler object.
+    Param: book_handler: the book handler object.
+    '''
     print('Result of h_books_by_category:')
     book_handler.books_by_category(1)
     print('Result of h_book_by_title:')
@@ -68,13 +71,19 @@ def test_book_handler(book_handler: BookHandler):
     print(f'Result of h_book_exists: {result}') # prints 1 if book exists in db, else 0.
 
 def test_member_handler(member_handler: MemberHandler):
-    '''Tests all functions & procedures of member handler object.'''
+    '''
+    Tests all functions & procedures of member handler object.
+    Param: member_handler: the member handler object.
+    '''
     member_handler.lend_book(5555555555555,1,7)
     print('Book lended succesfully')
     member_handler.add_member(20,'Nikos Papas','Marousi')
 
 def test_loan_handler(loans_handler: LoansHandler):
-    '''Tests all functions & procedures of loan handler object.'''
+    '''
+    Tests all functions & procedures of loan handler object.
+    Param: loans_handler: the loan handler object.
+    '''
     print('Result of h_return_book:')
     loans_handler.return_book(9789606355516)
     print('Result of h_update_deadline_date:')

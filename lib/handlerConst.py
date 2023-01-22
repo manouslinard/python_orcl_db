@@ -1,5 +1,6 @@
 '''Contains functions to compile procedures and functions of handler objects.'''
 
+# member handler object:
 book_already_exists = """
 CREATE OR REPLACE Function book_already_exists( isbn IN number ) RETURN number
 IS
@@ -88,7 +89,7 @@ BEGIN
 END h_add_new_member;
 END;
 """
-
+# book handler object:
 book_by_category = """
 CREATE OR REPLACE Function books_by_category ( cat IN number ) RETURN number
 IS
@@ -409,7 +410,10 @@ END;
 class Compile():
     '''Compile Class to compile all required functions & procedures for each handler object.'''
     def member_handler_obj(cursor):
-        '''Compiles required functions and procedures for member handler object.'''
+        '''
+        Compiles required functions and procedures for member handler object.
+        Param: cursor: the cursor of the database connection.
+        '''
         cursor.execute(book_already_exists)
         cursor.execute(is_loan)
         cursor.execute(lend_book_member)
@@ -417,7 +421,10 @@ class Compile():
         cursor.execute(member_handler_obj_body)
 
     def book_handler_obj(cursor):
-        '''Compiles required functions and procedures for book handler object.'''
+        '''
+        Compiles required functions and procedures for book handler object.
+        Param: cursor: the cursor of the database connection.
+        '''
         cursor.execute(book_already_exists)
         cursor.execute(is_loan)
         cursor.execute(has_category)
@@ -430,7 +437,10 @@ class Compile():
         cursor.execute(book_handler_obj_body)
 
     def loan_handler_obj(cursor):
-        '''Compiles required functions and procedures for loan handler object.'''
+        '''
+        Compiles required functions and procedures for loan handler object.
+        Param: cursor: the cursor of the database connection.
+        '''
         cursor.execute(book_already_exists)
         cursor.execute(is_loan)
         cursor.execute(return_book_to_library)

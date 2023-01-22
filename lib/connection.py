@@ -54,7 +54,7 @@ class Connection():
             exit()
         return conn
 
-    def checkTableExists(self, table_name: str):
+    def checkTableExists(self, table_name: str) -> bool:
         '''
         Checks if input table exists.
         Param: table_name: the input table's name.
@@ -80,10 +80,10 @@ class Connection():
             print(f"Older version of table {table_name} has been dropped.")
         except:
             print(f"Failed to drop older version of table {table_name}. Check for foreign keys or connection to server.")
-            print("Reminder: you should commit in oracle server.")
+            print("Reminder: you should always commit in each session (did you commit in oracle sql dev?).")
             # terminate_conn()
 
-    def __data_type(self, column_name, csv_file):
+    def __data_type(self, column_name, csv_file) -> str:
         '''
         Creates correct datatypes (and their size) by reading csv automatically.
         Param: column_name: the name of the column to check for.
@@ -125,7 +125,7 @@ class Connection():
         else:
             return f"VARCHAR2({max})"
 
-    def create_table(self, table_name: str, csv_name: str, replace: bool = False, req_columns: list = None, date_columns: list = None, pr_keys: list = None, pr_con_name: str = None):
+    def create_table(self, table_name: str, csv_name: str, replace: bool = False, req_columns: list = None, date_columns: list = None, pr_keys: list = None, pr_con_name: str = None) -> None:
         '''
         Creates new table (or replaces it).
         Param: table_name: the input table name.
@@ -171,14 +171,19 @@ class Connection():
     def __del__(self):
         self.terminate_conn()
 
-    def terminate_conn(self):
+    def terminate_conn(self) -> None:
         '''Closes connection to server and exits program.'''
         self.conn.commit()
         self.cursor.close()
         self.conn.close()
 
-    def __get_columns(self, csv_name: str, req_columns: list = None):
-        '''Gets columns of input csv and checks if there are any required columns missing.'''
+    def __get_columns(self, csv_name: str, req_columns: list = None) -> list:
+        '''
+        Gets columns of input csv and checks if there are any required columns missing.
+        Param: csv_name: the name of the csv file.
+               req_columns: a list of columns required in table.
+        Returns: a list of column names (according to csv file).
+        '''
         # with the variable name as csv_file
         with open(csv_name) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter = ',')
@@ -196,16 +201,19 @@ class Connection():
         # returns column names:
         return list_of_column_names[0]
 
-    def __get_columns_str(self, csv_name: str):
-        '''Returns columns of requested csv file to a string.'''
+    def __get_columns_str(self, csv_name: str) -> str:
+        '''Returns columns of requested csv file as a string.'''
         col = self.__get_columns(csv_name)
         if len(col) <= 1:
             return col
         else:
             return ', '.join(col)
 
-    def __num_values_str(self, csv_name: str):
-        '''Returns the values of csv columns.'''
+    def __num_values_str(self, csv_name: str) -> str:
+        '''
+        Returns the enumerate values of csv columns.
+        Param: csv_name: the name of the csv file.
+        '''
         l=self.__get_columns(csv_name)
         str=""
         count=1
@@ -214,7 +222,7 @@ class Connection():
             count+=1
         return str[:-1]
 
-    def delete_contents(self, table_name: str):
+    def delete_contents(self, table_name: str) -> None:
         '''
         Deletes contents from input table
         Param: table_name: the requested table.
@@ -225,7 +233,7 @@ class Connection():
         self.cursor.execute(f"DELETE FROM {table_name}")
         print(f'Previous contents of table "{table_name}" have been deleted.')
 
-    def insert(self, table_name: str, csv_name: str = None, delete_prev_recs: bool = False):
+    def insert(self, table_name: str, csv_name: str = None, delete_prev_recs: bool = False) -> None:
         '''
         Inserts data of csv to input table.
         Param: table_name: the name of the table for the data to be saved to.
@@ -268,7 +276,7 @@ class Connection():
         except:
             print(f"Failed to insert csv to table {table_name}. Check for incorrect data types or constraints (ex repetition of primary keys) in the requested csv file.")
 
-    def add_foreign_key(self, table1: str, f_col1: str, table2: str, pk_table2: str, fk_con_name: str = None):
+    def add_foreign_key(self, table1: str, f_col1: str, table2: str, pk_table2: str, fk_con_name: str = None) -> None:
         '''
         Adds a foreign key.
         Param: table1: the table to add the foreign key to.
@@ -294,7 +302,7 @@ class Connection():
             print("Failed to add foreign key constraints (make sure that requested columns exist or primary key exists or change contstraint name).")
             print("Reminder: cannot reference a primary key of a combination of primary keys with a foreign key")
 
-    def add_primary_key(self, table_name: str, primary_key: list, pr_con_name: str = None):
+    def add_primary_key(self, table_name: str, primary_key: list, pr_con_name: str = None) -> None:
         '''
         Adds a primary key.
         Param: table_name: the table to add the primary key.
@@ -321,7 +329,7 @@ class Connection():
         except:
             print("Failed to add primary key constraints (make sure that requested columns exist or change contstraint name).")
 
-    def check_col_exist(self, table_name: str, col_name: str):
+    def check_col_exist(self, table_name: str, col_name: str) -> bool:
         '''
         Checks if column exists.
         Param: table_name: the table's name.
@@ -337,7 +345,7 @@ class Connection():
         except:
             return False
 
-    def add_unique_constr(self, table_name: str, col: list, constr_name: str = None):
+    def add_unique_constr(self, table_name: str, col: list, constr_name: str = None) -> None:
         '''
         Adds unique constraint.
         Param: table_name: the name of the table to add the unique constraints to.

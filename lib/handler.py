@@ -5,10 +5,8 @@ from lib.connection import Connection
 from lib.handlerConst import Compile
 from config import DATE_FORMAT
 
-FUNC_ERROR = -100
-
 # source: https://stackoverflow.com/questions/72533233/how-can-i-get-the-dbms-output-in-python
-def get_dbms_output(cursor, print_res=True):
+def get_dbms_output(cursor, print_res=True) -> str:
     '''
     Returns result of dbms_output.
     Param: print_res: if true, prints result to console.
@@ -50,7 +48,7 @@ class MemberHandler():
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
         Compile.member_handler_obj(self.cursor)
 
-    def lend_book(self, isbn: int, member_id: int, days_deadline: int):
+    def lend_book(self, isbn: int, member_id: int, days_deadline: int) -> None:
         '''
         Lends a book to a member (with deadline).
         Param: isbn: the book's isbn.
@@ -73,7 +71,7 @@ class MemberHandler():
         except cx_Oracle.Error as error:
             print(error)
 
-    def add_member(self, new_member_id: int, member_fullname: str, member_address: str):
+    def add_member(self, new_member_id: int, member_fullname: str, member_address: str) -> None:
         '''
         Adds a new member.
         Param: new_member_id: the id of the new member.
@@ -116,7 +114,7 @@ class BookHandler():
             self.cursor.execute(books_by_cat_res)
         Compile.book_handler_obj(self.cursor)
 
-    def has_category(self, isbn: int, cat_id: int):
+    def has_category(self, isbn: int, cat_id: int) -> bool:
         '''
         Checks if input book belongs to a specified category.
         Param: isbn: the isbn of the book.
@@ -139,9 +137,9 @@ class BookHandler():
             return bool(r)
         except cx_Oracle.Error as error:
             print(error)
-            return FUNC_ERROR
+            return False
     
-    def book_by_title(self, title: str):
+    def book_by_title(self, title: str) -> None:
         '''
         Finds books by input title.
         Param: title: the title to look for.
@@ -162,7 +160,7 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
     
-    def book_by_author(self, author:str):
+    def book_by_author(self, author:str) -> None:
         '''
         Finds books by input author.
         Param: author: the author to look for.
@@ -183,7 +181,7 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
     
-    def return_book_to_library(self, isbn:int):
+    def return_book_to_library(self, isbn:int) -> None:
         '''
         Returns input book to the library.
         Param: isbn: the isbn of the book to be returned.
@@ -204,7 +202,7 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
     
-    def add_book(self, new_tite: str, new_author: str, new_isbn: int, cat_id: int):
+    def add_book(self, new_tite: str, new_author: str, new_isbn: int, cat_id: int) -> None:
         '''
         Adds a book.
         Param: new_title: the title of the book.
@@ -228,7 +226,7 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
     
-    def books_by_category(self, cat_id: int):
+    def books_by_category(self, cat_id: int) -> None:
         '''
         Prints books by input category id.
         Param: cat_id: the category id.
@@ -251,7 +249,7 @@ class BookHandler():
         except cx_Oracle.Error as error:
             print(error)
     
-    def book_exists(self, isbn: int):
+    def book_exists(self, isbn: int) -> bool:
         '''
         Returns true if input isbn exists, else false.
         Param: isbn: the isbn of the book.
@@ -292,7 +290,7 @@ class LoansHandler():
         self.cursor.callproc("dbms_output.enable")  # enables dbms output
         Compile.loan_handler_obj(self.cursor)
 
-    def return_book(self, isbn_loaned_book: int):
+    def return_book(self, isbn_loaned_book: int) -> None:
         '''
         Returns book with input isbn.
         Param: isbn_loaned_book: the input isbn of the requested book.
@@ -314,7 +312,7 @@ class LoansHandler():
         except cx_Oracle.Error as error:
             print(error)
 
-    def update_deadline_date(self, isbn_loaned_book: int, new_deadline: str):
+    def update_deadline_date(self, isbn_loaned_book: int, new_deadline: str) -> None:
         '''
         Updates deadline date.
         Param: isbn_loaned_book: the isbn of the book for its date to be updated.
@@ -339,7 +337,7 @@ class LoansHandler():
         except cx_Oracle.Error as error:
             print(error)
 
-    def is_loan(self, isbn: int):
+    def is_loan(self, isbn: int) -> int:
         '''
         Checks if book is loaned.
         Param: isbn: the book's isbn to check if loaned.
@@ -361,11 +359,11 @@ class LoansHandler():
                 """
             )
             r = int(get_dbms_output(self.cursor, print_res=False))
-            return bool(r)
+            return r
         except cx_Oracle.Error as error:
             print(error)
     
-    def get_loans_days(self, isbn: int):
+    def get_loans_days(self, isbn: int) -> int:
         '''
         Returns the days that a book is loaned.
         Param: isbn: the isbn of the requested book.
@@ -389,7 +387,7 @@ class LoansHandler():
         except cx_Oracle.Error as error:
             print(error)
 
-    def get_fine(self,isbn: int, daily_fine_cost: int):
+    def get_fine(self,isbn: int, daily_fine_cost: int) -> int:
         '''
         Calculates and returns the fine of the requested book.
         Param: isbn: the requested book isbn.
