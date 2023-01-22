@@ -3,6 +3,7 @@
 import cx_Oracle
 from lib.connection import Connection
 from lib.handlerConst import Compile
+from config import DATE_FORMAT
 
 FUNC_ERROR = -100
 
@@ -321,7 +322,7 @@ class LoansHandler():
         '''
         try:
             # call the stored procedure
-            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='YYYY-MM-DD'""")
+            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='{DATE_FORMAT}'""")
             self.cursor.execute(f"""
                 DECLARE
                     loans_handler loans_handler_obj;

@@ -5,9 +5,19 @@ This is a short manual on the setup before executing any scripts.
 
 ### Prerequisites:
 
+Install [oracle instant client](https://www.oracle.com/database/technologies/instant-client/downloads.html). Here is a helpful [tutorial](https://www.youtube.com/watch?v=v0TkfVFGO5c) (for windows) to do so.
+
+---
+
+### Configuration:
+
+In config.py file, you can change the following:
+
 - Change the path of your instant client directly in the config.py script so the instant client will be configured correctly (see at the top of script).
 
-- Install [oracle instant client](https://www.oracle.com/database/technologies/instant-client/downloads.html). Here is a helpful [tutorial](https://www.youtube.com/watch?v=v0TkfVFGO5c) (for windows) to do so.
+- Enter your credentials (username + password to database).
+
+- Date format: put the format that you want to save in database.
 
 ---
 

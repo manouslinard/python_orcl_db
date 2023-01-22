@@ -4,10 +4,11 @@ import os
 import csv
 import pandas as pd
 import cx_Oracle
-import lib.config as config
+import config
 
 PATH_INSTANT_CLIENT_ORCL = config.PATH_INSTANT_CLIENT_ORCL
 DEF_CSV_FOLDER = config.DEF_CSV_FOLDER
+DATE_FORMAT = config.DATE_FORMAT
 
 class Connection():
     """Connect to Database and handles requests."""
@@ -79,12 +80,14 @@ class Connection():
             print(f"Older version of table {table_name} has been dropped.")
         except:
             print(f"Failed to drop older version of table {table_name}. Check for foreign keys or connection to server.")
+            print("Reminder: you should commit in oracle server.")
             # terminate_conn()
 
     def __data_type(self, column_name, csv_file):
         '''
         Creates correct datatypes (and their size) by reading csv automatically.
-        Param: csv_file: the name of the csv_file.
+        Param: column_name: the name of the column to check for.
+               csv_file: the name of the csv_file.
         '''
         irisData = pd.read_csv(f'{csv_file}',index_col=False)
         v=irisData.get(column_name)
@@ -122,13 +125,14 @@ class Connection():
         else:
             return f"VARCHAR2({max})"
 
-    def create_table(self, table_name: str, csv_name: str, replace: bool = False, req_columns: list = None, pr_keys: list = None, pr_con_name: str = None):
+    def create_table(self, table_name: str, csv_name: str, replace: bool = False, req_columns: list = None, date_columns: list = None, pr_keys: list = None, pr_con_name: str = None):
         '''
         Creates new table (or replaces it).
         Param: table_name: the input table name.
                csv_name: the name of the csv file.
                replace: if true (and if table exists), re-creates table.
                req_columns: list of columns required in table (use it for foreign keys or primary keys).
+               date_columns: list of columns that are dates.
                pr_keys: list of primary keys (make sure they exist in csv file) - optional.
                pr_con_name: the name of the primary key constraint - optional.
         '''
@@ -153,6 +157,8 @@ class Connection():
         str=""
         for i in columns:
             r=self.__data_type(i,tmp_csv_name)
+            if date_columns is not None and i in date_columns:
+                r = 'DATE'
             # r contains data type of column (ex number(3,1))
             str += i +" "+r+", "
         self.cursor.execute(f"CREATE TABLE {table_name} ({str[:-2]})")   # str -> removes these last 2 characters : ', '
@@ -167,6 +173,7 @@ class Connection():
 
     def terminate_conn(self):
         '''Closes connection to server and exits program.'''
+        self.conn.commit()
         self.cursor.close()
         self.conn.close()
 
@@ -250,8 +257,10 @@ class Connection():
         irisData.head()
         print(f"Inserting data from requested csv into table {table_name}....")
         try:
+            self.cursor.execute(f"ALTER SESSION SET NLS_DATE_FORMAT='{DATE_FORMAT}'")
             for i,row in irisData.iterrows():
                 sql = f"INSERT INTO {table_name} ({column_names}) VALUES({num_values})"
+                row.fillna('', inplace=True)
                 self.cursor.execute(sql, tuple(row))
                 # the connection is not autocommitted by default, so we must commit to save our changes
             self.conn.commit()
