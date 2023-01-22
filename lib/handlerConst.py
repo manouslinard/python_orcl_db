@@ -1,3 +1,5 @@
+'''Contains functions to compile procedures and functions of handler objects.'''
+
 book_already_exists = """
 CREATE OR REPLACE Function book_already_exists( isbn IN number ) RETURN number
 IS
@@ -405,6 +407,7 @@ END;
 """
 
 class Compile():
+    '''Compile Class to compile all required functions & procedures for each handler object.'''
     def member_handler_obj(cursor):
         '''Compiles required functions and procedures for member handler object.'''
         cursor.execute(book_already_exists)

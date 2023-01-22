@@ -1,3 +1,5 @@
+'''Config file.'''
+
 # CHANGE THESE VARIABLES ACCORDING TO YOUR PREFERENCES ==================================
 
 # change path to corresponding path of instantclient

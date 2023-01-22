@@ -1,3 +1,5 @@
+'''Main class.'''
+
 from lib.handler import *
 
 c = Connection('ITxxxxx', 'ITxxxxx')

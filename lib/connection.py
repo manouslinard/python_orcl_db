@@ -1,3 +1,5 @@
+'''Contains db handler.'''
+
 import os
 import csv
 import pandas as pd
@@ -216,7 +218,7 @@ class Connection():
         self.cursor.execute(f"DELETE FROM {table_name}")
         print(f'Previous contents of table "{table_name}" have been deleted.')
 
-    def insert(self, table_name: str = 'iris', csv_name: str = None, delete_prev_recs: bool = False):
+    def insert(self, table_name: str, csv_name: str = None, delete_prev_recs: bool = False):
         '''
         Inserts data of csv to input table.
         Param: table_name: the name of the table for the data to be saved to.
