@@ -272,7 +272,7 @@ class Connection():
                 self.cursor.execute(sql, tuple(row))
                 # the connection is not autocommitted by default, so we must commit to save our changes
             self.conn.commit()
-            print("Record inserted succesfully")
+            print("Records inserted succesfully")
         except:
             print(f"Failed to insert csv to table {table_name}. Check for incorrect data types or constraints (ex repetition of primary keys) in the requested csv file.")
 
