@@ -13,11 +13,19 @@ Install [oracle instant client](https://www.oracle.com/database/technologies/ins
 
 In config.py file, you can change the following:
 
-- Change the path of your instant client directly in the config.py script so the instant client will be configured correctly (see at the top of script).
+- Change the path of your instant client directly in the config.py script so the instant client will be configured correctly (see at the top of config.py).
 
 - Enter your credentials (username + password to database).
 
 - Date format: put the format that you want to save in database.
+
+- Connect with vpn to oracle server (if needed).
+
+---
+
+### Execution:
+
+To run test program, please run main.py
 
 ---
 
