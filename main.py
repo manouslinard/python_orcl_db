@@ -117,7 +117,8 @@ if __name__ == "__main__":
     c = Connection(username=CLIENT_USERNAME, password=CLIENT_PASSWORD)
     drop_lib_tables(c)
     create_lib_tables(c)
-    
+
+    print("\nRunnning Tests =======")
     b_h = BookHandler(c)
     test_book_handler(b_h)
 

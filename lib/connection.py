@@ -122,8 +122,10 @@ class Connection():
             return f"NUMBER({max},{max_fl})"
         elif isint: # int values
             return f"NUMBER({max})"
-        else:
+        elif isstring:  # string (varchar) values
             return f"VARCHAR2({max})"
+        else:
+            return input(f"Could not resolve data type for column {column_name}. Please enter column's data type: ")
 
     def create_table(self, table_name: str, csv_name: str, replace: bool = False, req_columns: list = None, date_columns: list = None, pr_keys: list = None, pr_con_name: str = None) -> None:
         '''
