@@ -158,10 +158,11 @@ class Connection():
         print(f"Creating new table {table_name}...")
         str=""
         for i in columns:
-            r=self.__data_type(i,tmp_csv_name)
             if date_columns is not None and i in date_columns:
                 r = 'DATE'
-            # r contains data type of column (ex number(3,1))
+            else:
+                r=self.__data_type(i,tmp_csv_name)
+            # r contains data type of column (ex number(3,1) or 'DATE')
             str += i +" "+r+", "
         self.cursor.execute(f"CREATE TABLE {table_name} ({str[:-2]})")   # str -> removes these last 2 characters : ', '
         print(f"{table_name} table has been created..............")
