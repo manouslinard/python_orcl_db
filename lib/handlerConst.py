@@ -66,6 +66,17 @@ BEGIN
    end if;
 END;
 """
+add_member ="""
+-- 2.6 Answer
+CREATE OR REPLACE PROCEDURE add_new_member (new_member_id number, member_fullname varchar2, member_address varchar2)
+IS
+BEGIN
+  insert into members values(new_member_id,member_fullname,member_address);
+  dbms_output.put_line('New member added.');
+END;
+"""
+
+
 member_handler_obj = """
 -- 3.2 Answer
 CREATE OR REPLACE TYPE member_handler_obj AS OBJECT
@@ -417,6 +428,7 @@ class Compile():
         cursor.execute(book_already_exists)
         cursor.execute(is_loan)
         cursor.execute(lend_book_member)
+        cursor.execute(add_member)
         cursor.execute(member_handler_obj)
         cursor.execute(member_handler_obj_body)
 
