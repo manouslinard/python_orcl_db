@@ -30,6 +30,8 @@ class Connection():
                csv_folder_name: the name of the folder with all csv files (WARNING: has to be in the same directory as this python file).
                date_format: the date format (default is the same as config.py file).
         '''
+        if cx_Oracle.version >= '7.3':
+            cx_Oracle.SQL_INJECTION_CHECKS = True
         if path_instant_client is None:
             print('Path to instant client not provided. Please, enter a path to your oracle instant client.')
             raise RuntimeError
