@@ -1,5 +1,8 @@
-### Manual
-This is a short manual on the setup before executing any scripts.
+### Description
+
+* This project was made as an bonus assignment to the lesson 'Databases' at [HUA](https://www.hua.gr/index.php/el/). Basically it handles a book library from python using csv files. It is important however to emphasize that some of its classes (like connection class - see below) can be used regardless in other projects that need a way to connect to an oracle database and handle it with csv files using python (it is also recommended to include config.py file in parent directory for easier configuration).
+
+* This README file is a short manual on the setup before executing any scripts.
 
 ---
 
@@ -20,6 +23,13 @@ In config.py file, you can change the following:
 - Date format: put the format that you want to save in database.
 
 - Connect with vpn to oracle server (if needed).
+
+---
+
+### Connection class:
+
+The Connection class is a useful class to connect and handle a oracle database with csv files from python. It contains methods such as create, insert (and others) that can be used for handling a database (from python). It also attempts to detect and block any sql injections statements. This class can be used in other projects and not only this one (you should also contain config.py file in parent directory for easier configuration).
+
 
 ---
 

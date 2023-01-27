@@ -3,7 +3,10 @@
 import cx_Oracle
 from lib.connection import Connection
 from lib.handlerConst import Compile
-from config import DATE_FORMAT
+try:
+    from config import DATE_FORMAT
+except:
+    DATE_FORMAT = None
 
 # source: https://stackoverflow.com/questions/72533233/how-can-i-get-the-dbms-output-in-python
 def get_dbms_output(cursor, print_res=True) -> str:
@@ -312,15 +315,20 @@ class LoansHandler():
         except cx_Oracle.Error as error:
             print(error)
 
-    def update_deadline_date(self, isbn_loaned_book: int, new_deadline: str) -> None:
+    def update_deadline_date(self, isbn_loaned_book: int, new_deadline: str, date_format: str = DATE_FORMAT) -> None:
         '''
         Updates deadline date.
         Param: isbn_loaned_book: the isbn of the book for its date to be updated.
                new_deadline: date of the new deadline.
+               date_format: the date format (default value is defined in config.py)
         '''
+        if date_format is None:
+            date_format = "DD-MON-YY"
+            print('Date format not defined. Default oracle date format will be used: "DD-MON-YY"')
+        Connection.check_sql_injection(date_format)
         try:
             # call the stored procedure
-            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='{DATE_FORMAT}'""")
+            self.cursor.execute(f"""ALTER SESSION SET NLS_DATE_FORMAT='{date_format}'""")
             self.cursor.execute(f"""
                 DECLARE
                     loans_handler loans_handler_obj;

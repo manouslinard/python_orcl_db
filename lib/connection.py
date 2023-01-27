@@ -1,18 +1,24 @@
 '''Contains db handler.'''
 
 import os
+import re
 import csv
 import pandas as pd
 import cx_Oracle
-import config
 
-PATH_INSTANT_CLIENT_ORCL = config.PATH_INSTANT_CLIENT_ORCL
-DEF_CSV_FOLDER = config.DEF_CSV_FOLDER
-DATE_FORMAT = config.DATE_FORMAT
+try:
+    import config
+    PATH_INSTANT_CLIENT_ORCL = config.PATH_INSTANT_CLIENT_ORCL
+    DEF_CSV_FOLDER = config.DEF_CSV_FOLDER
+    DATE_FORMAT = config.DATE_FORMAT
+except:
+    PATH_INSTANT_CLIENT_ORCL = None
+    DEF_CSV_FOLDER = None
+    DATE_FORMAT = None
 
 class Connection():
     """Connect to Database and handles requests."""
-    def __init__(self, username: str = None, password: str = None, server: str = 'oracle12c.hua.gr', port: str = '1521', service_name: str = 'orcl', csv_folder_name: str = DEF_CSV_FOLDER) -> None:
+    def __init__(self, username: str = None, password: str = None, server: str = 'oracle12c.hua.gr', port: str = '1521', service_name: str = 'orcl', path_instant_client: str = PATH_INSTANT_CLIENT_ORCL, csv_folder_name: str = DEF_CSV_FOLDER, date_format: str = DATE_FORMAT) -> None:
         '''
         Creates a connection to an oracle sql server.
         Param: username: the username of the user inside of db.
@@ -20,8 +26,21 @@ class Connection():
                server: the server address (default is HUA server).
                port: the server's port (default is HUA server's port).
                service_name: the service's name (default is HUA server's service_name).
-               csv_folder_name: the folder with all csv files (WARNING: has to be in the same directory as this python file).
+               path_instant_client: the path to your oracle instant client (default is the same as config.py file).
+               csv_folder_name: the name of the folder with all csv files (WARNING: has to be in the same directory as this python file).
+               date_format: the date format (default is the same as config.py file).
         '''
+        if path_instant_client is None:
+            print('Path to instant client not provided. Please, enter a path to your oracle instant client.')
+            raise RuntimeError
+        if csv_folder_name is None:
+            print('Csv folder name not provided. Please, enter the name containing all your csv files.')
+            raise RuntimeError
+        if date_format is None:
+            print('Date format not provided. Setting date format to default "DD-MON-YY".')
+            self.DATE_FORMAT = "DD-MON-YY"
+        else:
+            self.DATE_FORMAT = date_format
         self.BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # gets path of this python file directory
         self.CSV_FOLDER = os.path.join(self.BASE_DIR, csv_folder_name)
         os.makedirs(self.CSV_FOLDER,exist_ok=True)
@@ -33,19 +52,44 @@ class Connection():
             self.password=input("Enter your password: ")
         else:
             self.password = password
-        self.conn = self.__connect(server, port, service_name)
+        self.conn = self.__connect(server, port, service_name, path_instant_client)
         self.cursor=self.conn.cursor()
 
-    def __connect(self, server: str, port: str, service_name: str):
+    @staticmethod
+    def check_sql_injection(string: str, is_col: bool = False):
+        """
+        This function checks a query for potential SQL injection vulnerabilities. 
+        Param: string: the sql string to be executed.
+               is_col: if true, checks if input string is a valid column name for an Oracle SQL database.
+        Raises RuntimeError if it detects any suspicious queries.
+        """
+        if string is None:
+            return
+        if is_col:
+            column_name_regex = "^[A-Za-z][A-Za-z0-9_$#]{0,30}$"
+            if re.match(column_name_regex, string) is None: # string has not valid column name for an oracle database.
+                print(f'Input Column {string} has not valid column name for an oracle db. Please change it in the corresponding csv or change the corresponding input parameter.')
+                raise RuntimeError
+
+        sql_keywords = ["SELECT", "FROM", "WHERE", "OR", "AND", "UNION", "GROUP", "ORDER", "LIMIT", ";", "'", '"', '--']
+        for keyword in sql_keywords:
+            keyword = re.escape(keyword)
+            match = re.search(r"\b" + keyword + r"\b", string)
+            if match:
+                print(f'Possible SQL injection detected: "{string}".')
+                raise RuntimeError
+
+    def __connect(self, server: str, port: str, service_name: str, path_instant_cl: str):
         '''
         Connects to server.
         Param: server: the server address.
                port: the server's port.
                service_name: the service's name.
+               path_instant_cl: the path to your oracle instant client.
         Returns: connection to server.
         '''
         try:
-            cx_Oracle.init_oracle_client(lib_dir=PATH_INSTANT_CLIENT_ORCL)
+            cx_Oracle.init_oracle_client(lib_dir=path_instant_cl)
             dsn_tns=cx_Oracle.makedsn(server,port,service_name=service_name)
             conn=cx_Oracle.connect(user=self.username,password=self.password,dsn=dsn_tns)
             print("You are connected. Database version:",conn.version)
@@ -75,6 +119,7 @@ class Connection():
         Drops requested table.
         Param: table_name: the table to be removed.
         '''
+        self.check_sql_injection(table_name)
         try:
             self.cursor.execute(f"DROP TABLE {table_name}")
             print(f"Older version of table {table_name} has been dropped.")
@@ -89,6 +134,7 @@ class Connection():
         Param: column_name: the name of the column to check for.
                csv_file: the name of the csv_file.
         '''
+        self.check_sql_injection(column_name, is_col=True)
         irisData = pd.read_csv(f'{csv_file}',index_col=False)
         v=irisData.get(column_name)
         max_fl=-1    # saves max length number after '.'
@@ -138,6 +184,8 @@ class Connection():
                pr_keys: list of primary keys (make sure they exist in csv file) - optional.
                pr_con_name: the name of the primary key constraint - optional.
         '''
+        self.check_sql_injection(table_name)
+        self.check_sql_injection(self.DATE_FORMAT)
         tmp_csv_name = os.path.join(self.CSV_FOLDER, csv_name)
         if (not tmp_csv_name.endswith(".csv")):
             tmp_csv_name+=".csv"
@@ -230,6 +278,7 @@ class Connection():
         Deletes contents from input table
         Param: table_name: the requested table.
         '''
+        self.check_sql_injection(table_name)
         if not self.checkTableExists(table_name):
             print('Cannot delete contents of non existing table.')
             return
@@ -243,6 +292,8 @@ class Connection():
                csv_name: the name of the csv file for the data to be saved.
                delete_prev_recs: if true, deletes all previous records of input table.
         '''
+        self.check_sql_injection(table_name)
+        self.check_sql_injection(self.DATE_FORMAT)
         if not self.checkTableExists(table_name):
             print('Requested table does not exist. Please create it first.')
             return
@@ -268,7 +319,7 @@ class Connection():
         irisData.head()
         print(f"Inserting data from requested csv into table {table_name}....")
         try:
-            self.cursor.execute(f"ALTER SESSION SET NLS_DATE_FORMAT='{DATE_FORMAT}'")
+            self.cursor.execute(f"ALTER SESSION SET NLS_DATE_FORMAT='{self.DATE_FORMAT}'")
             for i,row in irisData.iterrows():
                 sql = f"INSERT INTO {table_name} ({column_names}) VALUES({num_values})"
                 row.fillna('', inplace=True)
@@ -288,6 +339,11 @@ class Connection():
                pk_table2: the column of table2 that the foreign key refers to.
                fk_con_name: input constraint name for foreign key (optional).
         '''
+        self.check_sql_injection(table1)
+        self.check_sql_injection(table2)
+        self.check_sql_injection(f_col1, is_col=True)
+        self.check_sql_injection(pk_table2, is_col=True)
+        self.check_sql_injection(fk_con_name)
         if not self.checkTableExists(table1):
             print(f'Requested table {table1} does not exist')
             return
@@ -312,6 +368,10 @@ class Connection():
                primary_key: the column of input table to become primary key (make sure it exists).
                pk_con_name: input constraint name for primary key (optional).
         '''
+        self.check_sql_injection(table_name)
+        self.check_sql_injection(pr_con_name)
+        for i in primary_key:   # checks if i has sql injection or valid column name.
+            self.check_sql_injection(i, is_col=True)
         if not self.checkTableExists(table_name):
             print(f'Requested table {table_name} does not exist')
             return
@@ -339,6 +399,8 @@ class Connection():
                col_name: the column's name to check for.
         Returns: true if column exists in specified table, else false.
         '''
+        self.check_sql_injection(table_name)
+        self.check_sql_injection(col_name, is_col=True)
         if not self.checkTableExists(table_name):
             print('Requested Table does not exist.')
             return False
@@ -354,6 +416,10 @@ class Connection():
         Param: table_name: the name of the table to add the unique constraints to.
                col: list of columns
         '''
+        self.check_sql_injection(table_name)
+        self.check_sql_injection(constr_name)
+        for i in col:   # checks if i has sql injection or valid column name.
+            self.check_sql_injection(i, is_col=True)
         if not self.checkTableExists(table_name):
             print(f'Requested table {table_name} does not exist')
             return
