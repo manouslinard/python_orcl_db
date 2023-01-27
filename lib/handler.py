@@ -9,7 +9,7 @@ except:
     DATE_FORMAT = None
 
 # source: https://stackoverflow.com/questions/72533233/how-can-i-get-the-dbms-output-in-python
-def get_dbms_output(cursor, print_res=True) -> str:
+def get_dbms_output(cursor, print_res: bool = True) -> str:
     '''
     Returns result of dbms_output.
     Param: print_res: if true, prints result to console.
